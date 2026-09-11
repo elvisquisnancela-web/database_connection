@@ -32,11 +32,11 @@ def health():
         if db_host:
 
             conn = psycopg2.connect(
-                host=db_host,
-                port=os.getenv("DB_PORT", "5432"),
-                database=os.getenv("DB_NAME"),
-                user=os.getenv("DB_USER"),
-                password=os.getenv("DB_PASSWORD")
+                host="gistest.postgres.database.azure.com",
+                port="DB_PORT","5432",
+                database="postgres",
+                user="adminelvis",
+                password="Evsleo333"
             )
 
             conn.close()
