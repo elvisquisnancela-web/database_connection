@@ -15,48 +15,4 @@ def health(req: func.HttpRequest):
     )
 
 
-# =====================================================
-# DATABASE TEST
-# =====================================================
 
-@app.route(
-    route="dbtest",
-    auth_level=func.AuthLevel.ANONYMOUS
-)
-def dbtest(req: func.HttpRequest):
-
-    try:
-
-        conn = psycopg2.connect(
-            host="gistest.postgres.database.azure.com",
-            database="postgres",
-            user="adminelvis",
-            password="Evsleo333",
-            port=5432,
-            sslmode="require"
-        )
-
-        cur = conn.cursor()
-
-        cur.execute("""
-            SELECT
-                current_database(),
-                current_user;
-        """)
-
-        row = cur.fetchone()
-
-        cur.close()
-        conn.close()
-
-        return func.HttpResponse(
-            f"Database={row[0]}, User={row[1]}",
-            status_code=200
-        )
-
-    except Exception as e:
-
-        return func.HttpResponse(
-            str(e),
-            status_code=500
-        )
