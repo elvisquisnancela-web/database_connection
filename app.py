@@ -13,10 +13,10 @@ def dbtest(req: func.HttpRequest):
     try:
 
         conn = psycopg2.connect(
-            host=os.environ["gistest.postgres.database.azure.com"],
-            database=os.environ["postgres"],
-            user=os.environ["adminelvis"],
-            password=os.environ["Evsleo333"],
+            host="gistest.postgres.database.azure.com",
+            database="postgres",
+            user="adminelvis",
+            password="Evsleo333",
             sslmode="require"
         )
 
