@@ -3,6 +3,16 @@ import importlib.util
 
 app = func.FunctionApp()
 
+
+@app.route(
+    route="health",
+    auth_level=func.AuthLevel.ANONYMOUS
+)
+def health(req: func.HttpRequest):
+
+    return func.HttpResponse("OK")
+
+
 @app.route(
     route="packages",
     auth_level=func.AuthLevel.ANONYMOUS
