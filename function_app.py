@@ -1,5 +1,5 @@
 import azure.functions as func
-import psycopg
+
 
 app = func.FunctionApp()
 
