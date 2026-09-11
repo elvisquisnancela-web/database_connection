@@ -1,2 +1,2 @@
 azure-functions
-psycopg[binary]
+psycopg2-binary
