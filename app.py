@@ -46,6 +46,11 @@ def health():
 def query():
 
     sql = request.args.get("sql")
+    if not sql:
+        return jsonify({
+            "status": "error",
+            "message": "Missing SQL parameter"
+        }), 400
 
     try:
 
@@ -57,29 +62,87 @@ def query():
             password="Evsleo333"
         )
 
-        cur= conn.cursor()
-        geojson_sql = f"""
-        SELECT json_build_object(
-            'type', 'FeatureCollection',
-            'features', COALESCE(
-                json_agg(
-                    ST_AsGeoJSON(q.*)::json
-                ),
-                '[]'::json
-            )
-        )
+        cur = conn.cursor()
+
+        # =====================================================
+        # DETECT GEOMETRY
+        # =====================================================
+
+        schema_sql = f"""
+        SELECT *
         FROM (
             {sql}
         ) q
+        LIMIT 0
         """
-        
-        cur.execute(geojson_sql)
-        
-        result = cur.fetchone()[0]
-        
-        conn.close()
-        
-        return jsonify(result)
+
+        cur.execute(schema_sql)
+
+        has_geom = False
+
+        for desc in cur.description:
+
+            print(
+                f"Column: {desc.name}, "
+                f"TypeCode: {desc.type_code}"
+            )
+
+            if desc.type_code == 16400:
+                has_geom = True
+                break
+
+        print(f"Has geometry: {has_geom}")
+
+        # =====================================================
+        # SPATIAL QUERY -> GEOJSON
+        # =====================================================
+
+        if has_geom:
+
+            geojson_sql = f"""
+            SELECT json_build_object(
+                'type', 'FeatureCollection',
+                'features', COALESCE(
+                    json_agg(
+                        ST_AsGeoJSON(q.*)::json
+                    ),
+                    '[]'::json
+                )
+            )
+            FROM (
+                {sql}
+            ) q
+            """
+
+            cur.execute(geojson_sql)
+
+            result = cur.fetchone()[0]
+
+            conn.close()
+
+            return jsonify(result)
+
+        # =====================================================
+        # NON-SPATIAL QUERY -> TABLE JSON
+        # =====================================================
+
+        else:
+
+            cur = conn.cursor(
+                cursor_factory=RealDictCursor
+            )
+
+            cur.execute(sql)
+
+            rows = cur.fetchall()
+
+            conn.close()
+
+            return jsonify({
+                "type": "table",
+                "row_count": len(rows),
+                "rows": rows
+            })
 
     except Exception as ex:
 
@@ -87,3 +150,4 @@ def query():
             "status": "error",
             "message": str(ex)
         }), 500
+
