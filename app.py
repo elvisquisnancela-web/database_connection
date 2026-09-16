@@ -127,7 +127,7 @@ def query():
 
             cur.execute(sql)
 
-            result = cur.fetchall()
+            rows = cur.fetchall()
 
             conn.close()
 
