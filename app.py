@@ -77,21 +77,14 @@ def query():
         """
 
         cur.execute(schema_sql)
-
-        has_geom = False
-
-        for desc in cur.description:
-
-            print(
-                f"Column: {desc.name}, "
-                f"TypeCode: {desc.type_code}"
-            )
-
-            if desc.type_code == 16400:
-                has_geom = True
-                break
-
-        print(f"Has geometry: {has_geom}")
+        
+        columns = [desc.name.lower() for desc in cur.description]
+        
+        print("Columns:", columns)
+        
+        has_geom = "geom" in columns
+        
+        print("Has geometry:", has_geom)
 
         # =====================================================
         # SPATIAL QUERY -> GEOJSON
@@ -134,13 +127,12 @@ def query():
 
             cur.execute(sql)
 
-            rows = cur.fetchall()
+            result = cur.fetchall()
 
             conn.close()
 
             return jsonify({
                 "type": "table",
-                "row_count": len(rows),
                 "rows": rows
             })
 
