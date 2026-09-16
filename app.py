@@ -57,14 +57,28 @@ def query():
             password="Evsleo333"
         )
 
-        cur = conn.cursor(cursor_factory=RealDictCursor)
-
-        cur.execute(sql)
-
-        result = cur.fetchall()
-
+        cur= conn.cursor()
+        geojson_sql = f"""
+        SELECT json_build_object(
+            'type', 'FeatureCollection',
+            'features', COALESCE(
+                json_agg(
+                    ST_AsGeoJSON(q.*)::json
+                ),
+                '[]'::json
+            )
+        )
+        FROM (
+            {sql}
+        ) q
+        """
+        
+        cur.execute(geojson_sql)
+        
+        result = cur.fetchone()[0]
+        
         conn.close()
-
+        
         return jsonify(result)
 
     except Exception as ex:
