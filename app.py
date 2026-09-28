@@ -138,35 +138,40 @@ def query():
 @app.route("/query2")
 def query2():
 
-    question = request.args.get("question")
+    try:
 
-    if not question:
+        question = request.args.get("question")
+    
+        if not question:
+            return jsonify({
+                "error": "Question parameter missing"
+            }), 400
+    
+        sql = generate_sql(question)
+    
+        conn = get_connection()
+        cur = conn.cursor()
+    
+        cur.execute(sql)
+    
+        rows = cur.fetchall()
+    
+        conn.close()
+    
+        answer = generate_answer(
+        question,
+        rows
+        )
+    
         return jsonify({
-            "error": "Question parameter missing"
-        }), 400
+            "question": question,
+            "answer": answer,
+            "generated_sql": sql,
+            "rows": rows
+        })
 
-    sql = generate_sql(question)
-
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(sql)
-
-    rows = cur.fetchall()
-
-    conn.close()
-
-    answer = generate_answer(
-    question,
-    rows
-    )
-
-    return jsonify({
-        "question": question,
-        "answer": answer,
-        "generated_sql": sql,
-        "rows": rows
-    })
+    except Exception as e:
+        return jsonify ({"error": str(e)}), 500
 
 
 
