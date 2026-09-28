@@ -171,6 +171,7 @@ def query2():
         })
 
     except Exception as e:
+        print("ERROR:", str(e))
         return jsonify ({"error": str(e)}), 500
 
 
