@@ -1,10 +1,28 @@
 from flask import Flask, jsonify
 from flask import request
+from flask import render_template
 import psycopg2
 from psycopg2.extras import RealDictCursor
+from openai import AzureOpenAI
 import os
 
+from sql_generator import generate_sql
+from sql_generator import generate_answer
+
+
 app = Flask(__name__)
+
+DB_CONFIG = {
+    "host": "gistest.postgres.database.azure.com",
+    "database": "postgres",
+    "user": "adminelvis",
+    "password": "Evsleo333"
+}
+
+def get_connection():
+    return psycopg2.connect(**DB_CONFIG)
+
+
 
 
 @app.route("/hello")
@@ -113,4 +131,53 @@ def query():
             "status": "error",
             "message": str(ex)
         }), 500
+
+
+
+
+@app.route("/query_translate")
+def query_translate():
+
+    question = request.args.get("question")
+
+    if not question:
+        return jsonify({
+            "error": "Question parameter missing"
+        }), 400
+
+    sql = generate_sql(question)
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(sql)
+
+    rows = cur.fetchall()
+
+    conn.close()
+
+    answer = generate_answer(
+    question,
+    rows
+    )
+
+    return jsonify({
+        "question": question,
+        "answer": answer,
+        "generated_sql": sql,
+        "rows": rows
+    })
+
+
+
+@app.route("/abc123")
+def abc123():
+    return render_template("chat.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
 
