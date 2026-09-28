@@ -175,6 +175,12 @@ def abc123():
     return render_template("chat.html")
 
 
+
+@app.route("/routes")
+def routes():
+    return "\n".join(str(r) for r in app.url_map.iter_rules())
+
+
 if __name__ == "__main__":
     app.run(debug=True)
 
