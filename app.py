@@ -135,8 +135,8 @@ def query():
 
 
 
-@app.route("/query_translate")
-def query_translate():
+@app.route("/query2")
+def query2():
 
     question = request.args.get("question")
 
